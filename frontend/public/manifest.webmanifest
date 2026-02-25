@@ -1,0 +1,27 @@
+{
+  "short_name": "QueueEase",
+  "name": "QueueEase Hospital Queue System",
+  "description": "Digital tokens, real-time queues, and admin control for hospitals in Nepal",
+  "icons": [
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#059669",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["health", "medical"],
+  "lang": "en"
+}
