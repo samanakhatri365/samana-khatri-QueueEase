@@ -8,6 +8,8 @@ import ProtectedRoute from './components/routing/ProtectedRoute';
 import LandingPage from './pages/public/LandingPage';
 import LoginPage from './pages/public/LoginPage';
 import RegisterPage from './pages/public/RegisterPage';
+import StaffLoginPage from './pages/public/StaffLoginPage';
+import StaffRegisterPage from './pages/public/StaffRegisterPage';
 import VerifyEmailPage from './pages/public/VerifyEmailPage';
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage';
 import ResetPasswordPage from './pages/public/ResetPasswordPage';
@@ -34,6 +36,8 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/staff-login" element={<StaffLoginPage />} />
+        <Route path="/staff-register" element={<StaffRegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

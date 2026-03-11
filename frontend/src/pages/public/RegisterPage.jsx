@@ -11,7 +11,6 @@ const RegisterPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('patient');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -21,7 +20,7 @@ const RegisterPage = () => {
         setError('');
 
         try {
-            await register({ name, email, password, role });
+            await register({ name, email, password, role: 'patient' });
             // Redirect to email verification page
             navigate('/verify-email', { state: { email } });
         } catch (err) {
@@ -51,31 +50,9 @@ const RegisterPage = () => {
             <div className="w-full max-w-md bg-white shadow-xl border border-slate-100 rounded-2xl p-8">
                 <div className="flex flex-col gap-4 mb-8">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-slate-900">Create Account</h1>
-                        {/* Role Toggle */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
-                            <button
-                                type="button"
-                                onClick={() => setRole('patient')}
-                                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
-                                    role === 'patient'
-                                        ? 'bg-white shadow-sm text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                            >
-                                Patient
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setRole('admin')}
-                                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
-                                    role === 'admin'
-                                        ? 'bg-white shadow-sm text-slate-900'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                            >
-                                Admin
-                            </button>
+                        <h1 className="text-2xl font-bold text-slate-900">Patient Registration</h1>
+                        <div className="px-3 py-1 text-[10px] font-bold tracking-widest rounded-md uppercase bg-emerald-100 text-emerald-600">
+                            Patient
                         </div>
                     </div>
                     <p className="text-slate-500 text-sm">Join QueueEase to manage your health visits</p>
@@ -155,12 +132,16 @@ const RegisterPage = () => {
                     </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+                <div className="mt-8 pt-6 border-t border-slate-100 text-center space-y-3">
                     <p className="text-sm text-slate-500">
                         Already have an account?
                         <Link to="/login" className="font-bold text-slate-900 hover:text-primary transition-colors underline-offset-4 hover:underline ml-1">
                             Sign In
                         </Link>
+                    </p>
+                    <p className="text-slate-400 text-xs">
+                        Are you staff or admin?
+                        <Link to="/staff-register" className="text-blue-500 font-semibold hover:underline ml-1">Staff / Admin Register</Link>
                     </p>
                 </div>
             </div>

@@ -24,6 +24,9 @@ const Navbar = ({ showAuthButtons = true }) => {
                             <Link to="/login" className="px-4 py-2 text-slate-600 hover:text-primary transition-colors font-medium">
                                 Login
                             </Link>
+                            <Link to="/staff-login" className="px-4 py-2 text-slate-600 hover:text-blue-600 transition-colors font-medium">
+                                Staff Login
+                            </Link>
                             <Link to="/register" className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-primary/20 font-bold">
                                 Get Started
                             </Link>

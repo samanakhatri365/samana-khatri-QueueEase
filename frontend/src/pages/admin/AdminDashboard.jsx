@@ -4,6 +4,8 @@ import { Settings, BarChart3, Users, Hospital, Activity, LogOut, Plus, RefreshCw
 import { useAuth } from '../../context/AuthContext';
 import { seedDepartments, getDepartments, getStaff, createStaff, addDepartment, resetQueue, getDailyAnalytics, getSystemConfig, updateSystemConfig } from '../../services/api';
 import { io } from 'socket.io-client';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
     BarChart, Bar, Cell
@@ -167,58 +169,138 @@ const AdminDashboard = () => {
         }
     };
 
-    // CSV Export Function
-    const exportToCSV = () => {
+    // PDF Export Function
+    const exportToPDF = () => {
         if (!analyticsData) {
             alert('No analytics data available to export');
             return;
         }
 
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "QueueEase Daily Analytics Report\n";
-        csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
 
-        // Summary Stats
-        csvContent += "SUMMARY\n";
-        csvContent += `Total Patients Served,${analyticsData.totalServed || 0}\n`;
-        csvContent += `Average Wait Time (mins),${analyticsData.avgWaitTime || 0}\n\n`;
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(16, 185, 129); // emerald color
+        doc.text('QueueEase', pageWidth / 2, 20, { align: 'center' });
+        doc.setFontSize(14);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Daily Analytics Report', pageWidth / 2, 30, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, 38, { align: 'center' });
+
+        let yPos = 50;
+
+        // Summary section
+        doc.setFontSize(13);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Summary', 14, yPos);
+        yPos += 4;
+
+        autoTable(doc, {
+            startY: yPos,
+            head: [['Metric', 'Value']],
+            body: [
+                ['Total Patients Served', String(analyticsData.totalServed || 0)],
+                ['Average Wait Time (mins)', String(analyticsData.avgWaitTime || 0)],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 10 },
+            margin: { left: 14, right: 14 },
+        });
+
+        yPos = doc.lastAutoTable.finalY + 12;
 
         // Doctor Breakdown
         if (analyticsData.doctorBreakdown && analyticsData.doctorBreakdown.length > 0) {
-            csvContent += "DOCTOR PERFORMANCE\n";
-            csvContent += "Doctor Name,Tokens Served\n";
-            analyticsData.doctorBreakdown.forEach(row => {
-                csvContent += `${row.name || 'Unknown'},${row.count}\n`;
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Doctor Performance', 14, yPos);
+            yPos += 4;
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Doctor Name', 'Tokens Served']],
+                body: analyticsData.doctorBreakdown.map(row => [
+                    row.name || 'Unknown',
+                    String(row.count),
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10 },
+                margin: { left: 14, right: 14 },
             });
-            csvContent += "\n";
+
+            yPos = doc.lastAutoTable.finalY + 12;
         }
 
         // Department Breakdown
         if (analyticsData.departmentBreakdown && analyticsData.departmentBreakdown.length > 0) {
-            csvContent += "DEPARTMENT PERFORMANCE\n";
-            csvContent += "Department,Total Tokens\n";
-            analyticsData.departmentBreakdown.forEach(row => {
-                csvContent += `${row.departmentName || 'Unknown'},${row.count}\n`;
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Department Performance', 14, yPos);
+            yPos += 4;
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Department', 'Total Tokens']],
+                body: analyticsData.departmentBreakdown.map(row => [
+                    row.departmentName || 'Unknown',
+                    String(row.count),
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [139, 92, 246], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10 },
+                margin: { left: 14, right: 14 },
             });
-            csvContent += "\n";
+
+            yPos = doc.lastAutoTable.finalY + 12;
         }
 
-        // Hourly breakdown
+        // Hourly Breakdown
         if (analyticsData.hourlyData && analyticsData.hourlyData.length > 0) {
-            csvContent += "HOURLY BREAKDOWN\n";
-            csvContent += "Hour,Tokens\n";
-            analyticsData.hourlyData.forEach(row => {
-                csvContent += `${row.hour},${row.tokens}\n`;
+            // Check if we need a new page
+            if (yPos > 240) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Hourly Breakdown', 14, yPos);
+            yPos += 4;
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Hour', 'Tokens']],
+                body: analyticsData.hourlyData.map(row => [
+                    String(row.hour),
+                    String(row.tokens),
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10 },
+                margin: { left: 14, right: 14 },
             });
         }
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `analytics_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text(
+                `QueueEase Analytics - Page ${i} of ${pageCount}`,
+                pageWidth / 2,
+                doc.internal.pageSize.getHeight() - 10,
+                { align: 'center' }
+            );
+        }
+
+        doc.save(`analytics_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     const stats = [
@@ -290,10 +372,10 @@ const AdminDashboard = () => {
                     <div className="flex gap-3">
                         {activeTab === 'analytics' && (
                             <button
-                                onClick={exportToCSV}
+                                onClick={exportToPDF}
                                 className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-primary/20"
                             >
-                                <Download className="w-5 h-5" /> Export Report
+                                <Download className="w-5 h-5" /> Export PDF
                             </button>
                         )}
                         {activeTab === 'departments' && (
